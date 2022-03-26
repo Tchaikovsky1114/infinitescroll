@@ -1,90 +1,133 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState ,forwardRef, useImperativeHandle, Component} from 'react';
+import { QueryObserver } from 'react-query';
+import { Link,Router } from 'react-router-dom';
+import { useRecoilState } from 'recoil';
 import styled from 'styled-components';
+import { ChangeNavigationStyle } from './atom';
+import SearchInput from './SearchInput';
 
-const MainNavigation = styled.div`
+
+
+const MainNavigation = styled.div<{changeNavigationStyle?: boolean}>`
+  /*  */
   z-index: 99;
-  background-color: rgba(0, 0, 0, 0.9);
-  color: white;
+  background:whitesmoke;
+  color: black;
   display: flex;
-  border: 1px solid black;
-  justify-content: space-around;
+  border: 0;
   align-items: center;
-  height: 100px;
+  height: ${props => props.changeNavigationStyle ?  '5rem': '6.25rem' };
   width: 100%;
   position: fixed;
-  font-size: 18px;
+  font-size: ${props => props.changeNavigationStyle ?  '0.875rem':'1.125rem'};
   font-weight: bold;
-  li svg {
-    top: 40px;
-    margin-left: 10px;
-    z-index: 1;
-    width: 20px;
+  box-shadow: ${props => props.changeNavigationStyle ? 'none':'2px 2px 3px grey;'};
+  transition: all 0.5s;
+  svg {
+    top: 1.0625rem;
+    left: ${props => props.changeNavigationStyle ? '14.575rem': '14.7rem'  };
+    width: 1.25rem;
     fill: black;
     position: absolute;
+    z-index:1000;
+    transition: all 0.5s;
   }
   button {
-    min-width: 50px;
+    width: 3.125rem;
     z-index: 1;
-    width: 20px;
     position: absolute;
-    top: 40px;
-    right: 49rem;
+    top: 1.125rem;
+    left:30rem;
     border: 0;
     background-color: white;
     font-weight: bold;
-    border-radius: 25px;
+    border-radius: 1.5625rem;
     cursor: pointer;
+    transition: all 0.5s;
   }
   button:hover {
-    color: rgb(150, 150, 150);
+    color: rgb(200, 200, 200);
   }
   button:active {
-    color: rgb(5, 5, 155);
+    color: rgb(55, 55, 255);
   }
-  input {
-    padding: 0px 30px;
-    width: 250px;
-    height: 50px;
-    border-radius: 20px;
-    font-size: 20px;
-    position: relative;
+  h4{
+    font-size:${props => props.changeNavigationStyle ?  '1.5rem': '1.75rem' };
+    transition: all 0.5s;
+  }
+  span{
+
+    min-width:175px;
+  }
+  @media(max-width:93.75rem){
+    transition: all 0.5s;
+    h4{
+      font-size: 1.2rem;
+      top:40%;
+      left:5%;
+    }
+  }
+  @media(max-width:73.75rem){
+    transition: all 0.5s;
+    h4{
+      display:none;
+    }
+  }
+  @media(max-width:50rem){
+    transition: all 0.5s;
+    span,a{
+      display:none;
+    }
+    svg{
+      top: 32%;
+      left: 0.625rem;
+      transition: all 0.5s;
+    }
+    button{
+      top:35%;
+      left:28.375rem;
+    }
   }
 `;
-const NavigationList = styled.ul`
-  display: flex;
-  align-items: center;
-  gap: 120px;
-  li:first-child {
-    margin-right: 200px;
+
+
+const NavigationList = styled.div`
+display:flex;
+justify-content:center;
+align-items:center;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  position:absolute;
+  a{
+    width: 120px;
+    margin-left: 5rem;
+    color:inherit;
   }
 `;
-const Banner = styled.li`
-  min-width: 280px;
+const Banner = styled.h4`
+  width: 17.5rem;
   padding: 0;
-  margin: 0;
+  top:32%;
+  left:10%;
+  transform:translate(-10%,-10%);
+  position:absolute;
   text-align: left;
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: bold;
-  color: rgb(200, 20, 50, 0.8);
-  margin-bottom: 24px;
+  color: rgb(110,5,55);
+  margin-bottom: 1.5rem;
+  
 `;
-const TopNavigation = () => {
-    const navigation = useRef<HTMLDivElement>(null);
-    
+
+const TopNavigation = ({setIsSearching,setIsScrollLoading}:any) => {
+  const [changeNavigationStyle, setChangeNavigationStyle] = useRecoilState(ChangeNavigationStyle);
     return (
-        <MainNavigation ref={navigation}>
+        <MainNavigation changeNavigationStyle={changeNavigationStyle} >
         <Banner>우리동네 착한가게</Banner>
         <NavigationList>
-          <li>
-            착한가게 찾아보기{' '}
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-              <path d="M500.3 443.7l-119.7-119.7c27.22-40.41 40.65-90.9 33.46-144.7C401.8 87.79 326.8 13.32 235.2 1.723C99.01-15.51-15.51 99.01 1.724 235.2c11.6 91.64 86.08 166.7 177.6 178.9c53.8 7.189 104.3-6.236 144.7-33.46l119.7 119.7c15.62 15.62 40.95 15.62 56.57 0C515.9 484.7 515.9 459.3 500.3 443.7zM79.1 208c0-70.58 57.42-128 128-128s128 57.42 128 128c0 70.58-57.42 128-128 128S79.1 278.6 79.1 208z" />
-            </svg>
-            <input type="text" />
-            <button>찾기</button>
-          </li>
-          <h4>착한가게 등록하기</h4>
-          <li>착한가게란?</li>
+          <SearchInput setIsSearching={setIsSearching} setIsScrollLoading={setIsScrollLoading}/>
+          <Link to={"/"}>착한가게란?</Link>
         </NavigationList>
       </MainNavigation>
     );
