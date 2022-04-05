@@ -14,9 +14,9 @@ const MainNavigation = styled.div<{changeNavigationStyle?: boolean}>`
   background:whitesmoke;
   color: black;
   display: flex;
-  border: 0;
+  
   align-items: center;
-  height: ${props => props.changeNavigationStyle ?  '5rem': '6.25rem' };
+  height: ${props => props.changeNavigationStyle ?  '5rem': '5.8rem' };
   width: 100%;
   position: fixed;
   font-size: ${props => props.changeNavigationStyle ?  '0.875rem':'1.125rem'};
@@ -121,7 +121,7 @@ const Banner = styled.h4`
 `;
 
 const TopNavigation = ({setIsSearching,setIsScrollLoading}:any) => {
-  const [changeNavigationStyle, setChangeNavigationStyle] = useRecoilState(ChangeNavigationStyle);
+  const [changeNavigationStyle] = useRecoilState(ChangeNavigationStyle);
     return (
         <MainNavigation changeNavigationStyle={changeNavigationStyle} >
         <Banner>우리동네 착한가게</Banner>
