@@ -16,3 +16,8 @@ export const saveInputValue = atom({
     key: 'saveInputValue',
     default:[]
 })
+
+export const sortedSearchingStore = atom({
+    key: 'sorted',
+    default:[]
+})

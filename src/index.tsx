@@ -5,7 +5,6 @@ import App from './App';
 import {QueryClient, QueryClientProvider, useQuery} from 'react-query'
 import {ReactQueryDevtools} from 'react-query/devtools'
 import { BrowserRouter } from 'react-router-dom';
-import { generateMedia } from 'styled-media-query';
 import { RecoilRoot } from 'recoil';
 
 const GlobalStyle = createGlobalStyle`
@@ -17,7 +16,7 @@ const GlobalStyle = createGlobalStyle`
   margin:0;
 }
 body{
-
+ height:100%;
 }
 a{
   text-decoration:none;

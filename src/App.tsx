@@ -1,6 +1,4 @@
 import React, {
-  Component,
-  ReactNode,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -14,10 +12,15 @@ import TopNavigation from './Components/TopNavigation';
 import { isTemplateExpression } from 'typescript';
 import { useScroll } from './Components/useScroll';
 import { useRecoilState } from 'recoil';
-import { ChangeNavigationStyle, saveInputValue, searchInputValue } from './Components/atom';
+import {
+  ChangeNavigationStyle,
+  saveInputValue,
+  searchInputValue,
+  sortedSearchingStore,
+} from './Components/atom';
 import { useQuery } from 'react-query';
 import { fetchAllStore } from './api';
-
+import Sidebar from './Components/Sidebar';
 interface IJSON {
   currentCount: number;
   page: number;
@@ -43,42 +46,40 @@ const Containner = styled.div`
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  background-color:whitesmoke;
+  background-color: whitesmoke;
 `;
 
 const Card = styled.ul`
-  
-  min-width: 480px;
-  border: 2px solid rgb(110,5,55);
+  width: 380px;
+  border: 2px solid rgb(110, 5, 55);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 20px;
-  margin: 10px 10px;
+  margin: 30px 20px;
   padding: 20px 0px;
   background: whitesmoke;
-  
+  max-height:300px;
   border-radius: 10px;
-  box-shadow: 2px 2px 3px rgb(215,200,215);
+  box-shadow: 2px 2px 3px rgb(215, 200, 215);
   &:hover {
     box-shadow: 4px 4px 6px grey;
     transform: translate(0px, -10px);
     transition: all 0.2s;
   }
-  li{
+  li {
     font-family: cursive;
   }
 `;
 const Menu = styled.li`
   font-size: 1.4rem;
-  font-weight:bold;
-`
+  font-weight: bold;
+`;
 const StoreTitle = styled.li`
-
   font-size: 28px;
   font-weight: bold;
-  color:rgb(110,5,55);
+  color: rgb(110, 5, 55);
 `;
 const filterString = [
   '미용업',
@@ -94,17 +95,40 @@ const filterString = [
 ];
 
 function App() {
-  const [searchInputVal,setSearchInputVal] = useRecoilState<any>(searchInputValue)
+  const [searchInputVal, setSearchInputVal] =
+    useRecoilState<any>(searchInputValue);
   const [storeList, setStoreList] = useState<any>([]);
-  const [changeNavigationStyle, setChangeNavigationStyle] = useRecoilState(ChangeNavigationStyle);
+  const [changeNavigationStyle, setChangeNavigationStyle] = useRecoilState(
+    ChangeNavigationStyle
+  );
+  const [sortedStore,setSortedStore] = useRecoilState<any>(sortedSearchingStore)
   const [pageNumber, setPageNumber] = useState(1);
   const [isScrollLoading, setIsScrollLoading] = useState<any>(true);
+  // const [sortedStore,setSortedStore] = useState<any>();
   const nextPage = useRef<HTMLDivElement>(null);
   const navigationTarget = useRef<HTMLDivElement>(null);
-  const {data,isLoading,isFetching,isError,error} = useQuery('AllStore',fetchAllStore)
+  const { data, isLoading, isFetching, isError, error } = useQuery(
+    'AllStore',
+    fetchAllStore
+  );
+  
+  useEffect(()=>{
+    const filterSearchedData:any = data?.data.data.filter(
+        ({ 업종 }: any) => !filterString.includes(업종)
+      ).map((storeArray: any) =>
+        Object.values(storeArray)
+      ).filter((store: any) =>
+        store.join(',').includes(searchInputVal)
+      );
+      setSortedStore([filterSearchedData]);
+      return;
+    },[data?.data.data,searchInputVal,setSortedStore])
+  
+  
+  
   const [isSearching, setIsSearching] = useState<any>(false);
-  const {scrollY} = useScroll();
-  // const naviroot = useRef<HTMLDivElement>(null);
+  const { scrollY } = useScroll();
+
   const fetchGoodStore = async (pageNumber: number) => {
     const res = await fetch(
       `https://api.odcloud.kr/api/3045247/v1/uddi:1c782e6f-9281-451d-aa04-a550074abc2d?page=${pageNumber}&perPage=6&serviceKey=HdgqKrzt9tddkO%2B3ZaQ3KjO9IA5uT23vcj33Zg6BmTby1kd2tNsD3rSVOjx8rg84A60ItTkVEEGdViZxMYjwCw%3D%3D`
@@ -124,17 +148,14 @@ function App() {
     setPageNumber((prevPage) => prevPage + 1);
   };
 
-useEffect(()=>{
-  if(scrollY > 50){
-    setChangeNavigationStyle(true)
-  }else{
-    setChangeNavigationStyle(false)
-  }
-},[scrollY])
-useEffect(()=>{console.log(data?.data.data.filter(({업종}:any) => !filterString.includes(업종)).map((storeArray:any) => Object.values(storeArray)).filter((store:any) => store.join(',').includes(searchInputVal)))
-return;}
-,[data?.data.data,searchInputVal])
-  
+  useEffect(() => {
+    if (scrollY > 50) {
+      setChangeNavigationStyle(true);
+    } else {
+      setChangeNavigationStyle(false);
+    }
+  }, [scrollY]);
+
   useEffect(() => {
     if (!nextPage.current) {
       return;
@@ -155,59 +176,52 @@ return;}
       }
     });
   };
+  
   return (
     <div>
-      <TopNavigation setIsSearching={setIsSearching} setIsScrollLoading={setIsScrollLoading}/>
-      
-        <div ref={navigationTarget} style={{ height: '100px' }}></div>
-     
+      <TopNavigation
+        setIsSearching={setIsSearching}
+        setIsScrollLoading={setIsScrollLoading}
+      />
+      <div ref={navigationTarget} style={{ height: '100px', backgroundColor:'whitesmoke'}}></div>
+      <Sidebar/>
       <Containner>
-      {/* isSearching이면 검색 결과 페이지 로딩 */}
-        {isSearching ? data?.data.data.filter(({업종}:any) => !filterString.includes(업종)).map((storeArray:any) => Object.values(storeArray)).filter((store:any) => store.join(',').includes(searchInputVal)).map((store: any) =>
-           (
-            <Card key={store[4]}>
-              <StoreTitle>
-                ({store[8]}){store[7]}
-              </StoreTitle>
-              <Menu> {store[2]}</Menu>
-              <li>{store[0]} 원</li>
-              <li>
+      
+        
+        {isSearching
+          ? sortedStore[0].map((store: any) => (
+              <Card key={store[4]}>
+                <StoreTitle>
+                  ({store[8]}){store[7]}
+                </StoreTitle>
+                <Menu> {store[2]}</Menu>
+                <li> {store[0]} 원</li>
+                <li>
                 {store[5]} {store[11]}
-              </li>
-              <li>영업시간: {store[10]} </li>
-              <li>
-                주차: {store[3] === 'N' ? '불가' : '가능'}{' '}
-              </li>
-              <li>
-                배달: {store[12] === 'N' ? '불가' : '가능'}{' '}
-              </li>
-              
-              <li>가게 연락처 : {store[9]} </li>
-            </Card>
-          ))
-         : storeList.map((storeArray: any) =>
-        storeArray.map((store: any) => (
-          <Card key={store.순번}>
-            <StoreTitle>
-              ({store.업종}){store.업소명}
-            </StoreTitle>
-            <Menu> {store.대표품목}</Menu>
-            <li>{store.가격.toLocaleString()} 원</li>
-            <li>
-              {store['시/군/구']} {store['주소(도로명 새주소 명기)']}
-            </li>
-            <li>영업시간: {store.영업시간} </li>
-            <li>
-              주차: {store.주차가능여부 === 'N' ? '불가' : '가능'}{' '}
-            </li>
-            <li>
-              배달: {store.배달가능여부 === 'N' ? '불가' : '가능'}{' '}
-            </li>
-            
-            <li>가게 연락처 : {store.연락처} </li>
-          </Card>
-        ))
-      )}
+                </li>
+                <li> 영업시간: {store[10]} </li>
+                <li> 주차: {store[3] === 'N' ? '불가' : '가능'} </li>
+                <li> 배달: {store[12] === 'N' ? '불가' : '가능'} </li>
+                <li> 가게 연락처 : {store[9]} </li>
+              </Card>
+            ))
+          : storeList.map((storeArray: any) =>
+              storeArray.map((store: any) => (
+                <Card key={store.순번}>
+                  <StoreTitle>
+                    ({store.업종}){store.업소명}
+                  </StoreTitle>
+                  <Menu> {store.대표품목}</Menu>
+                  <li> {store.가격.toLocaleString()} 원</li>
+                  <li> 주소: {store['시/군/구']} {store['주소(도로명 새주소 명기)']}
+                  </li>
+                  <li>영업시간: {store.영업시간} </li>
+                  <li> 주차: {store.주차가능여부 === 'N' ? '불가' : '가능'} </li>
+                  <li> 배달: {store.배달가능여부 === 'N' ? '불가' : '가능'} </li>
+                  <li> 가게 연락처 : {store.연락처} </li>
+                </Card>
+              ))
+            )}
         {!isScrollLoading && (
           <div ref={nextPage} style={{ width: '100%', height: '200px' }} />
         )}

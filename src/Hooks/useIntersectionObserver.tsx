@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 
 
@@ -67,26 +67,42 @@ interface useIntersectionObserverProps {
 }
 
 const useIntersectionObserver = ({
-  root,
-  rootMargin = '0px',
-  threshold = 0,
+ 
   onIntersect,
 }: useIntersectionObserverProps) => {
-  const [target, setTarget] = useState<HTMLElement | null | undefined>(null);
 
+
+  const [nextPage,setNextPage] = useState<HTMLDivElement | null | undefined>(null);
+  // const nextPage = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (!target) return;
-
+    if (!nextPage) {
+      return;
+    }
     const observer: IntersectionObserver = new IntersectionObserver(
       onIntersect,
-      { root, rootMargin, threshold }
+      { threshold: [0] }
     );
-    observer.observe(target);
+    observer.observe(nextPage);
+    return () => observer && observer.disconnect();
+  });
+  
 
-    return () => observer.unobserve(target);
-  }, [onIntersect, root, rootMargin, target, threshold]);
+  return {setNextPage};
+  // const [target, setTarget] = useState<HTMLElement | null | undefined>(null);
 
-  return { setTarget };
+  // useEffect(() => {
+  //   if (!target) return;
+
+  //   const observer: IntersectionObserver = new IntersectionObserver(
+  //     onIntersect,
+  //     { root, rootMargin, threshold }
+  //   );
+  //   observer.observe(target);
+
+  //   return () => observer.unobserve(target);
+  // }, [onIntersect, root, rootMargin, target, threshold]);
+
+  // return { setTarget };
 };
 
 export default useIntersectionObserver;
